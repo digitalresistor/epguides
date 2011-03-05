@@ -17,6 +17,7 @@
  #
 ###
 
+
 from HTMLParser import HTMLParser
 import os
 import urllib2 as urllib
@@ -27,6 +28,7 @@ import logging
 import sys
 import time
 import datetime
+import string
 
 SETTINGS = {
 	# This is the directory where we are going to store the settings, and various other things
@@ -50,6 +52,7 @@ class _epguides_parser(HTMLParser):
 	def __init__(self, *args, **kw):
 		HTMLParser.__init__(self)
 		self.foundpre = 0
+		self.foundspan = 0
 		self.found = ""
 		self.charset = "utf-8"
 
@@ -76,13 +79,18 @@ class _epguides_parser(HTMLParser):
 			
 			if settype:
 				self._content_type(content)
+		if tag == "span":
+			self.foundspan = 1
 
 	def handle_endtag(self, tag):
 		if tag == "pre":
 			self.foundpre = 0
+			
+		if tag == "span":
+			self.foundspan = 0
 
 	def handle_data(self, data):
-		if self.foundpre:
+		if self.foundpre == 1 and self.foundspan == 0:
 			#data = data.decode("iso-8859-1")
 			data = data.decode(self.charset)
 			self.found = u"%s%s" % (self.found, data)
@@ -426,8 +434,12 @@ class Shows(object):
 		
 		if showname in self.shows:
 			return self.shows[showname]
-		else:
-			return None 
+		
+		for key in self.shows.keys():
+			if key.replace(' ', '') == showname:
+				return self.shows[key]
+		
+		return None 
 		
 	
 	def list_cache(self):
@@ -534,6 +546,8 @@ if __name__ == '__main__':
 			re.compile("(?:[./]*)(?P<showname>[\w.]+)\.S(?P<season>[\d]+)\.?E(?P<episode>[\d]+)", re.I | re.X),
 			re.compile("(?:[./]*)(?P<showname>[\w. ]+)[\s]+-[\s]+(?P<season>[\d]+)(?P<episode>[\d]{2}).*", re.I | re.X),
 			re.compile("(?:[./]*)(?P<showname>[\w. ]+)[\s]+(?P<season>[\d]+)x?(?P<episode>[\d]{2}).*", re.I | re.X),
+			re.compile("(?:[./]*)(?P<showname>[\w. ]+)\.(?P<season>[\d]+)(?P<episode>[\d]{2}).*", re.I | re.X),
+			re.compile("(?:[./]*)(?P<showname>[\w. ]+).*S(?P<season>[\d]+)E(?P<episode>[\d]{2}).*", re.I | re.X),
 		]
 		
 		matchfound = False
@@ -543,12 +557,11 @@ if __name__ == '__main__':
 		
 		for rfile in filere:
 			parts = rfile.match(filename)
-			
+
 			if parts is None:
 				continue
 				
 			parts = parts.groupdict()
-			
 			showname = parts['showname'].replace('.', ' ').strip()
 			season = int(parts['season'])
 			episode = int(parts['episode'])
@@ -564,8 +577,15 @@ if __name__ == '__main__':
 		show = shows.find_show(showname)
 		
 		if show is None:
-			print >> sys.stderr, "Show not found"
-			exit(1)
+			print >> sys.stderr, "Show not found: %s" % showname
+			showname = string.rsplit(showname, " ", 1)[0]
+			print >> sys.stderr, "Removed the last item in the string, retrying: %s" % showname
+
+			show = shows.find_show(showname)
+
+			if show is None:
+				print >> sys.stderr, "Still a no go, giving up: %s" %showname
+				exit(1)
 			
 		show.list_data(season=season, episode=episode)
 				
