@@ -20,4 +20,8 @@ if [ ! -d "$DESTDIR" ]; then
 	mkdir "$DESTDIR"
 fi
 
-mv "$FILENAME" "$DEST/$NFILENAME"
+DEST=$DEST/$NFILENAME
+
+echo "Moving: " $FILENAME " to: " ${DEST}
+
+mv "$FILENAME" "${DEST}"
