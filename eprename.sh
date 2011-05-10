@@ -10,7 +10,9 @@ if [ $? -gt 0 ]; then
 	exit 1
 fi
 
-NFILENAME=`echo $EFILENAME | sed -E "s/([0-9]+) ([0-9]+) (.*)/Season \1\/Episode \2 - \3.avi/"`
+SUFFIX=${FILENAME##*.}
+
+NFILENAME=`echo $EFILENAME | sed -E "s/([0-9]+) ([0-9]+) (.*)/Season \1\/Episode \2 - \3.${SUFFIX}/"`
 
 DIR=`echo $NFILENAME | sed -E "s/(.+)\/.*/\1/"`
 
