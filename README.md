@@ -1,6 +1,6 @@
 epguides.py - epguides.com parser
 =================================
-I was inspired by a post on Reddit to start writing some code I had wanted to write for a long time. I am rather OCD about the naming scheme I use for my TV Shows and everything along those lines, and want the most accurate information that is available. [epguides.com](http://epguides.com) provides the HTML for the show episodes, what date they were released, the season, the episode number, and the full name for said episode. This script downloads the HTML files, then parses them and puts them in a cache file on the hard drive, from there using some regexp magic given an filename like `The.Walking.Dead.S01E05.Wildfire.HDTV.XviD-FQM.\[VTV\].avi` will return:
+[epguides.com](http://epguides.com) provides the HTML for the show episodes, what date they were released, the season, the episode number, and the full name for said episode. This script downloads the HTML files, then parses them and puts them in a cache file on the hard drive, from there using some regexp magic given an filename like `The.Walking.Dead.S01E05.Wildfire.HDTV.XviD-FQM.\[VTV\].avi` will return:
 
     1 05 Wildfire
 
